@@ -1,25 +1,25 @@
-import { ReactNode } from 'react';
 import Image from 'next/image';
 
 export interface TweetProps {
-    children: ReactNode;
+    content: string;
     className?: string;
 }
 
-export default function Tweet({ children, className, ...props }: TweetProps) {
-    let cn =
-        className ??
-        'rounded bg-cyan-100 py-2 px-4 font-bold shadow-md shadow-slate-500 hover:bg-cyan-200';
-
+export default function Tweet({ content, className, ...props }: TweetProps) {
     return (
-        <div className="flex border-2 border-solid border-slate-300">
+        <div className="flex border-2 border-solid border-slate-300 drop-shadow-md">
             <Image
                 src="/images/person.svg"
                 alt="Person icon"
                 width={72}
                 height={72}
             />
-            <p className="flex-1 bg-slate-100 p-2 text-left">{children}</p>
+            <div className="flex flex-1 bg-slate-100 p-2 text-left">
+                <p className="flex-1">{content}</p>
+                <div className="place-self-end bg-sky-200 p-1 text-sm">
+                    {content.length}
+                </div>
+            </div>
         </div>
     );
 }
