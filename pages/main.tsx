@@ -1,11 +1,20 @@
 import { NextPage } from 'next';
 import Image from 'next/image';
+import { useEffect } from 'react';
 // import Link from 'next/link';
 import Button from '../components/button';
 import Layout from '../components/layout';
 import Title from '../components/title';
+import Tweet from '../components/tweet';
 
 const Main: NextPage = () => {
+    useEffect(() => {
+        const tweet = document.querySelector(
+            'textarea[name="tweet"]'
+        ) as HTMLTextAreaElement;
+        tweet?.focus();
+    });
+
     return (
         <Layout>
             <div className="mb-1 flex w-8/12">
@@ -23,14 +32,16 @@ const Main: NextPage = () => {
             </div>
             <div className="flex w-8/12 flex-col space-y-1">
                 <textarea
+                    name="tweet"
                     placeholder="Enter tweet content here"
-                    className="h-96 rounded-sm border-2 border-slate-300"
+                    className="h-96 rounded-sm border-2 border-slate-300 p-2"
                 />
                 <input
                     type="text"
                     placeholder="Optional URL to tweet to reply to"
-                    className="rounded-sm border-2 border-slate-300"
+                    className="rounded-sm border-2 border-slate-300 pl-2"
                 />
+                {}
                 <Button additionalClassName="self-end w-4/12">Post</Button>
             </div>
 
