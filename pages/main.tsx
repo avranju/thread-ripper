@@ -12,6 +12,7 @@ import { signOut, useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
 
 const Main: NextPage = () => {
+    // set focus on the big tweet textarea
     useEffect(() => {
         const tweetInput = document.querySelector(
             'textarea[name="tweet"]'
@@ -19,8 +20,8 @@ const Main: NextPage = () => {
         tweetInput?.focus();
     });
 
+    // handle automatic tweets splitting and preview
     let [tweets, setTweets] = useState([] as string[]);
-
     const onTweetChange = () => {
         const tweetInput = document.querySelector(
             'textarea[name="tweet"]'
@@ -35,11 +36,91 @@ const Main: NextPage = () => {
         }
     };
 
+    // post status state label
+    let [postStatus, setPostStatusReal] = useState(<></>);
+    let [postLabelCss, setPostLabelCss] = useState(
+        'grow self-center text-left text-sky-600'
+    );
+
+    const setErrorPostStatus = (status: string) => {
+        setPostStatusReal(<span>{status}</span>);
+        setPostLabelCss('grow self-center text-left text-amber-500');
+    };
+
+    const setPostStatus = (status: string) => {
+        setPostStatusReal(<span>{status}</span>);
+        setPostLabelCss('grow self-center text-left text-sky-600');
+    };
+
+    const setPostStatusHtml = (status: JSX.Element) => {
+        setPostStatusReal(status);
+        setPostLabelCss('grow self-center text-left text-sky-600');
+    };
+
+    // handle display of signed in user name
     const { data: session } = useSession();
     const userName = session?.user?.name ?? '--';
 
-    const router = useRouter();
+    const onPostTweet = async () => {
+        const tweetInput = document.querySelector(
+            'textarea[name="tweet"]'
+        ) as HTMLTextAreaElement;
 
+        const replyToInput = document.querySelector(
+            'input[name="replyTo"]'
+        ) as HTMLInputElement;
+
+        if (tweetInput) {
+            const content = tweetInput.value.trim();
+            const replyTo = replyToInput.value.trim();
+            if (content.length > 0) {
+                const req = {
+                    content,
+                    replyTo,
+                };
+
+                setPostStatus('Posting tweet(s)...');
+                const resp = await fetch('/api/tweet', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(req),
+                });
+
+                if (resp.ok) {
+                    const result = await resp.json();
+
+                    if (result.status === 'success') {
+                        const me = session?.me as any;
+                        const tweetUrl = `https://twitter.com/${
+                            me?.data?.username ?? 'UNKNOWN'
+                        }/status/${result.tweetIds[0]}`;
+                        const html = (
+                            <div>
+                                Tweet thread available at:{' '}
+                                <a
+                                    href={tweetUrl}
+                                    target="_blank"
+                                    className="underline"
+                                >
+                                    {tweetUrl}
+                                </a>
+                            </div>
+                        );
+                        setPostStatusHtml(html);
+                    } else {
+                        setErrorPostStatus(result.message);
+                    }
+                } else {
+                    setErrorPostStatus('Error posting tweet(s).');
+                }
+            }
+        }
+    };
+
+    // handle sign out
+    const router = useRouter();
     const logOut = async () => {
         const data = await signOut({ redirect: false, callbackUrl: '/' });
         router.push(data.url);
@@ -79,10 +160,19 @@ const Main: NextPage = () => {
                 />
                 <input
                     type="text"
+                    name="replyTo"
                     placeholder="Optional URL of tweet to reply to"
                     className="rounded-sm border-2 border-slate-300 pl-2"
                 />
-                <Button additionalClassName="self-end w-4/12">Post</Button>
+                <div className="flex w-full">
+                    <div className={postLabelCss}>{postStatus}</div>
+                    <Button
+                        additionalClassName="self-end w-1/6"
+                        onClick={onPostTweet}
+                    >
+                        Post
+                    </Button>
+                </div>
 
                 {tweets.length > 0 && (
                     <SubTitle additionalClassName="self-start pt-8">
