@@ -8,6 +8,8 @@ import { Tweets } from '../components/tweets';
 import { debounce } from 'lodash';
 import splitText, { SplitNumberPosition } from '../utils/text-split';
 import SubTitle from '../components/sub-title';
+import { signOut, useSession } from 'next-auth/react';
+import { useRouter } from 'next/router';
 
 const Main: NextPage = () => {
     useEffect(() => {
@@ -33,6 +35,16 @@ const Main: NextPage = () => {
         }
     };
 
+    const { data: session } = useSession();
+    const userName = session?.user?.name ?? '--';
+
+    const router = useRouter();
+
+    const logOut = async () => {
+        const data = await signOut({ redirect: false, callbackUrl: '/' });
+        router.push(data.url);
+    };
+
     return (
         <Layout>
             <div className="mb-1 flex w-full">
@@ -43,10 +55,20 @@ const Main: NextPage = () => {
                     height={100}
                     className="self-start"
                 />
-                <Title additionalClassName="self-center">
+                <Title additionalClassName="self-center text-left grow">
                     Compose and post tweet
                 </Title>
-                <br />
+                <div className="grid grid-rows-2 gap-2">
+                    <SubTitle additionalClassName="self-end">
+                        {userName}
+                    </SubTitle>
+                    <button
+                        onClick={logOut}
+                        className="h-7 w-20 place-self-end self-start bg-slate-100 text-blue-600"
+                    >
+                        Sign Out
+                    </button>
+                </div>
             </div>
             <div className="flex w-full flex-col space-y-1">
                 <textarea
