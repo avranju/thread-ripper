@@ -1,9 +1,11 @@
-FROM node:17-alpine
+FROM node:16-alpine
+
+RUN corepack enable
 
 WORKDIR /app
 ADD . /app
 
-RUN npm install
-RUN npm run build
+RUN yarn
+RUN yarn build
 
-ENTRYPOINT [ "npm", "run", "start" ]
+ENTRYPOINT [ "yarn", "start" ]

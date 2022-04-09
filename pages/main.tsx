@@ -102,6 +102,7 @@ const Main: NextPage = () => {
                                 <a
                                     href={tweetUrl}
                                     target="_blank"
+                                    rel="noreferrer"
                                     className="underline"
                                 >
                                     {tweetUrl}
